@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, Col, Container, Modal, Row } from "react-bootstrap";
+import { Button, Col, Container, Modal, Row, Alert } from "react-bootstrap";
 import QuartoForm from "../components/QuartoForm";
 import QuartoLista from "../components/QuartoLista";
 import ModalExcluir from "../components/ModalExcluir";
 import QuartoVisaoGeral from "../components/QuartoVisaoGeral";
 import ModalDetalhes from "../components/ModalDetalhes";
 import quartoService from "../services/quartoService";
+import Lateral from "../components/Lateral";
 import "./GerenciarQuartos.css";
 
 const GerenciarQuartos = () => {
@@ -17,7 +18,9 @@ const GerenciarQuartos = () => {
   const [quartoSelecionado, setQuartoSelecionado] = useState(null);
   const [mostrarDetalhes, setMostrarDetalhes] = useState(false);
 
-  
+  // Estado para armazenar erros ao salvar quarto
+  const [erroSalvar, setErroSalvar] = useState(null);
+
   useEffect(() => {
     const carregar = async () => {
       try {
@@ -30,9 +33,10 @@ const GerenciarQuartos = () => {
     carregar();
   }, []);
 
-  
   const handleSalvar = async (quarto) => {
     try {
+      setErroSalvar(null); // limpa erro anterior
+
       if (quartoEditando) {
         const atualizado = await quartoService.update(quartoEditando.id, quarto);
         setQuartos((prev) =>
@@ -46,22 +50,24 @@ const GerenciarQuartos = () => {
       setQuartoEditando(null);
     } catch (error) {
       console.error("Erro ao salvar quarto:", error);
+      setErroSalvar(
+        "Erro ao salvar quarto. Por favor, verifique os dados e tente novamente."
+      );
+      // NÃO fecha o modal para usuário poder corrigir o problema
     }
   };
-
 
   const handleEditar = (quarto) => {
     setQuartoEditando(quarto);
     setMostrarForm(true);
+    setErroSalvar(null); // limpa erro se houver
   };
-
 
   const handleConfirmarExclusao = (id) => {
     setIdParaExcluir(id);
     setMostrarModalExcluir(true);
   };
 
-  
   const handleExcluir = async () => {
     try {
       await quartoService.remove(idParaExcluir);
@@ -73,92 +79,104 @@ const GerenciarQuartos = () => {
     }
   };
 
-
   const handleView = (quarto) => {
     setQuartoSelecionado(quarto);
     setMostrarDetalhes(true);
   };
 
   return (
-    <Container className="py-4">
-      <Row className="mb-4">
-        <Col className="d-flex justify-content-between align-items-center">
-          <h1>Gerenciamento de Quartos</h1>
-          <Button
-            variant={mostrarForm ? "secondary" : "primary"}
-            onClick={() => {
-              setQuartoEditando(null);
-              setMostrarForm(true);
-            }}
-          >
-            Adicionar Quarto
-          </Button>
-        </Col>
-      </Row>
+    <Lateral>
+      <div className="content-area">
+        <Container className="py-4">
+          <Row className="mb-4">
+            <Col className="d-flex justify-content-between align-items-center">
+              <h1>Gerenciamento de Quartos</h1>
+              <Button
+                variant={mostrarForm ? "secondary" : "primary"}
+                onClick={() => {
+                  setQuartoEditando(null);
+                  setMostrarForm(true);
+                  setErroSalvar(null);
+                }}
+              >
+                Adicionar Quarto
+              </Button>
+            </Col>
+          </Row>
 
-      <Row className="secao-quartos">
-        <Col>
-          <QuartoVisaoGeral
-            quartos={quartos}
-            onDelete={handleConfirmarExclusao}
-            onEdit={handleEditar}
-            onView={handleView}
-          />
-        </Col>
-      </Row>
+          <Row className="secao-quartos">
+            <Col>
+              <QuartoVisaoGeral
+                quartos={quartos}
+                onDelete={handleConfirmarExclusao}
+                onEdit={handleEditar}
+                onView={handleView}
+              />
+            </Col>
+          </Row>
 
-      <Row>
-        <Col>
-          <QuartoLista
-            quartos={quartos}
-            onDelete={handleConfirmarExclusao}
-            onEdit={handleEditar}
-            onView={handleView}
-          />
-        </Col>
-      </Row>
+          <Row>
+            <Col>
+              <QuartoLista
+                quartos={quartos}
+                onDelete={handleConfirmarExclusao}
+                onEdit={handleEditar}
+                onView={handleView}
+              />
+            </Col>
+          </Row>
+        </Container>
 
-      {}
-      <Modal
-        show={mostrarForm}
-        onHide={() => {
-          setMostrarForm(false);
-          setQuartoEditando(null);
-        }}
-        centered
-        size="lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {quartoEditando ? "Editar Quarto" : "Adicionar Novo Quarto"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <QuartoForm
-            onSave={handleSalvar}
-            onCancel={() => {
-              setMostrarForm(false);
-              setQuartoEditando(null);
-            }}
-            quartoAtual={quartoEditando}
-          />
-        </Modal.Body>
-      </Modal>
+        {/* Modal de adicionar/editar */}
+        <Modal
+          show={mostrarForm}
+          onHide={() => {
+            setMostrarForm(false);
+            setQuartoEditando(null);
+            setErroSalvar(null);
+          }}
+          centered
+          size="lg"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {quartoEditando ? "Editar Quarto" : "Adicionar Novo Quarto"}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {erroSalvar && (
+              <Alert variant="danger" className="mb-3">
+                {erroSalvar}
+              </Alert>
+            )}
+            <QuartoForm
+              onSave={handleSalvar}
+              onCancel={() => {
+                setMostrarForm(false);
+                setQuartoEditando(null);
+                setErroSalvar(null);
+              }}
+              quartoAtual={quartoEditando}
+              quartosExistentes={quartos}
+            />
+          </Modal.Body>
+        </Modal>
 
-      {}
-      <ModalExcluir
-        show={mostrarModalExcluir}
-        onHide={() => setMostrarModalExcluir(false)}
-        onConfirm={handleExcluir}
-      />
+        {/* Modal de confirmação de exclusão */}
+        <ModalExcluir
+          show={mostrarModalExcluir}
+          onHide={() => setMostrarModalExcluir(false)}
+          onConfirm={handleExcluir}
+        />
 
-      {}
-      <ModalDetalhes
-        show={mostrarDetalhes}
-        onHide={() => setMostrarDetalhes(false)}
-        quarto={quartoSelecionado}
-      />
-    </Container>
+        {/* Modal de detalhes */}
+        <ModalDetalhes
+          show={mostrarDetalhes}
+          onHide={() => setMostrarDetalhes(false)}
+          quarto={quartoSelecionado}
+        />
+      </div>
+    </Lateral>
   );
 };
 

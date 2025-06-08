@@ -4,9 +4,10 @@ const Quarto = require('../models/quartos');
 class QuartoRepository {
   async findAll() {
     try {
-      const [rows] = await db.execute('SELECT * FROM quartos');
+      const [rows] = await db.execute('SELECT * FROM quartos ORDER BY numero ASC');
       return rows.map(row => new Quarto(row));
     } catch (error) {
+      console.error('Erro no repository findAll:', error);
       throw new Error(`Erro ao buscar quartos: ${error.message}`);
     }
   }
@@ -16,6 +17,7 @@ class QuartoRepository {
       const [rows] = await db.execute('SELECT * FROM quartos WHERE tipo = ?', [tipo]);
       return rows.map(row => new Quarto(row));
     } catch (error) {
+      console.error('Erro no repository findByTipo:', error);
       throw new Error(`Erro ao buscar quartos por tipo: ${error.message}`);
     }
   }
@@ -26,6 +28,7 @@ class QuartoRepository {
       if (rows.length === 0) return null;
       return new Quarto(rows[0]);
     } catch (error) {
+      console.error('Erro no repository findById:', error);
       throw new Error(`Erro ao buscar quarto por ID: ${error.message}`);
     }
   }
@@ -35,18 +38,23 @@ class QuartoRepository {
       const [rows] = await db.execute('SELECT * FROM quartos WHERE status = ?', [status]);
       return rows.map(row => new Quarto(row));
     } catch (error) {
+      console.error('Erro no repository findByStatus:', error);
       throw new Error(`Erro ao buscar quartos por status: ${error.message}`);
     }
   }
 
   async create(data) {
-    const quarto = new Quarto(data);
+    // Remove id caso venha
+    const { id, ...dados } = data;
+    const quarto = new Quarto(dados);
+    quarto.status = 'Disponível';
+
     const errors = quarto.validate();
     if (errors.length > 0) {
-      throw new Error(errors.join(', '));
+      const errMsg = errors.join(', ');
+      console.error('Validação falhou no repository create:', errMsg);
+      throw new Error(errMsg);
     }
-
-    const observacaoFinal = quarto.observacao !== undefined ? quarto.observacao : null;
 
     try {
       const [result] = await db.execute(
@@ -58,12 +66,19 @@ class QuartoRepository {
           quarto.ocupacao,
           quarto.status,
           quarto.andar,
-          observacaoFinal
+          quarto.observacao || null
         ]
       );
+      // Define o id gerado no banco no objeto quarto
       quarto.id = result.insertId;
       return quarto;
     } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        const msg = `Já existe um quarto com número ${quarto.numero}`;
+        console.error('Erro de duplicidade no repository create:', msg);
+        throw new Error(msg);
+      }
+      console.error('Erro inesperado no repository create:', error);
       throw new Error(`Erro ao inserir quarto: ${error.message}`);
     }
   }
@@ -71,16 +86,31 @@ class QuartoRepository {
   async update(id, data) {
     const existing = await this.findById(id);
     if (!existing) {
-      throw new Error('Quarto não encontrado para atualização');
+      const msg = 'Quarto não encontrado para atualização';
+      console.error(msg);
+      throw new Error(msg);
     }
 
-    const quarto = new Quarto({ ...data, id });
+    // Preservar status atual se não vier na requisição
+    const status = data.status || existing.status;
+
+    const quarto = new Quarto({
+      id,
+      numero: data.numero,
+      tipo: data.tipo,
+      leitos: data.leitos,
+      ocupacao: data.ocupacao !== undefined ? data.ocupacao : existing.ocupacao,
+      status,
+      andar: data.andar,
+      observacao: data.observacao
+    });
+
     const errors = quarto.validate();
     if (errors.length > 0) {
-      throw new Error(errors.join(', '));
+      const errMsg = errors.join(', ');
+      console.error('Validação falhou no repository update:', errMsg);
+      throw new Error(errMsg);
     }
-
-    const observacaoFinal = quarto.observacao !== undefined ? quarto.observacao : null;
 
     try {
       await db.execute(
@@ -92,15 +122,14 @@ class QuartoRepository {
           quarto.ocupacao,
           quarto.status,
           quarto.andar,
-          observacaoFinal,
+          quarto.observacao || null,
           id
         ]
       );
 
-      
-      const atualizado = await this.findById(id);
-      return atualizado;
+      return await this.findById(id);
     } catch (error) {
+      console.error('Erro no repository update:', error);
       throw new Error(`Erro ao atualizar quarto: ${error.message}`);
     }
   }
@@ -109,9 +138,12 @@ class QuartoRepository {
     try {
       const [result] = await db.execute('DELETE FROM quartos WHERE id = ?', [id]);
       if (result.affectedRows === 0) {
-        throw new Error('Quarto não encontrado para exclusão');
+        const msg = 'Quarto não encontrado para exclusão';
+        console.error(msg);
+        throw new Error(msg);
       }
     } catch (error) {
+      console.error('Erro no repository delete:', error);
       throw new Error(`Erro ao excluir quarto: ${error.message}`);
     }
   }

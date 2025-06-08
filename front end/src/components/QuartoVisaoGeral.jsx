@@ -11,9 +11,11 @@ const QuartoVisaoGeral = ({ quartos = [], onDelete, onEdit }) => {
     setPaginaAtual(1);
   }, [quartos]);
 
-  const totalPaginas = Math.ceil(quartos.length / quartosPorPagina);
+  // Ordenar os quartos por número
+  const quartosOrdenados = [...quartos].sort((a, b) => a.numero - b.numero);
+  const totalPaginas = Math.ceil(quartosOrdenados.length / quartosPorPagina);
   const inicio = (paginaAtual - 1) * quartosPorPagina;
-  const quartosPaginados = quartos.slice(inicio, inicio + quartosPorPagina);
+  const quartosPaginados = quartosOrdenados.slice(inicio, inicio + quartosPorPagina);
 
   const proximaPagina = () => {
     if (paginaAtual < totalPaginas) {

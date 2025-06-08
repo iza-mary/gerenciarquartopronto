@@ -27,13 +27,15 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
   const toggleFiltros = () => setFiltrosVisiveis(!filtrosVisiveis);
 
   const quartosFiltrados = useMemo(() => {
-    return quartos.filter((quarto) => {
-      const buscaMatch = quarto.numero.toString().includes(busca);
-      const tipoMatch = filtroTipo ? quarto.tipo === filtroTipo : true;
-      const andarMatch = filtroAndar ? quarto.andar.toString() === filtroAndar : true;
-      const statusMatch = filtroStatus ? quarto.status === filtroStatus : true;
-      return buscaMatch && tipoMatch && andarMatch && statusMatch;
-    });
+    return [...quartos]
+      .filter((quarto) => {
+        const buscaMatch = quarto.numero.toString().includes(busca);
+        const tipoMatch = filtroTipo ? quarto.tipo === filtroTipo : true;
+        const andarMatch = filtroAndar ? quarto.andar.toString() === filtroAndar : true;
+        const statusMatch = filtroStatus ? quarto.status === filtroStatus : true;
+        return buscaMatch && tipoMatch && andarMatch && statusMatch;
+      })
+      .sort((a, b) => a.numero - b.numero);
   }, [quartos, busca, filtroTipo, filtroAndar, filtroStatus]);
 
   const totalPaginas = Math.ceil(quartosFiltrados.length / quartosPorPagina);
@@ -98,6 +100,19 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
                   <option value="Disponível">Disponível</option>
                   <option value="Ocupado">Ocupado</option>
                 </Form.Select>
+
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  className="mt-2 w-100"
+                  onClick={() => {
+                    setFiltroTipo("");
+                    setFiltroAndar("");
+                    setFiltroStatus("");
+                  }}
+                >
+                  Limpar Filtros
+                </Button>
               </Dropdown.Menu>
             </Dropdown>
           </InputGroup>
@@ -121,7 +136,6 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
                     <th>Ocupação</th>
                     <th>Status</th>
                     <th>Andar</th>
-                    <th>Observação</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -135,7 +149,7 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
                         </span>
                       </td>
                       <td>{quarto.leitos}</td>
-                      <td>{`0/${quarto.leitos}`}</td>
+                      <td>{`${quarto.ocupacao ?? 0}/${quarto.leitos}`}</td>
                       <td>
                         <span
                           className={`badge fw-semibold px-2 py-1 rounded-pill ${
@@ -148,17 +162,6 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
                         </span>
                       </td>
                       <td>{`${quarto.andar}º`}</td>
-                      <td
-                        style={{
-                          maxWidth: "200px",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                        title={quarto.observacao || ""}
-                      >
-                        {quarto.observacao || "-"}
-                      </td>
                       <td className="d-flex justify-content-center gap-2">
                         <OverlayTrigger placement="top" overlay={<Tooltip>Editar</Tooltip>}>
                           <Button
@@ -197,7 +200,10 @@ const QuartoLista = ({ quartos, onDelete, onEdit, onView }) => {
               </Table>
             </div>
 
-            <div className="d-flex justify-content-end align-items-center mt-3">
+            <div className="d-flex justify-content-between align-items-center mt-3 px-2">
+              <small className="text-muted">
+                Página {paginaAtual} de {totalPaginas}
+              </small>
               <nav>
                 <ul className="pagination mb-0">
                   <li className={`page-item ${paginaAtual === 1 ? "disabled" : ""}`}>

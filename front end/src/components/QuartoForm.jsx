@@ -1,31 +1,21 @@
 import { useEffect, useState } from "react";
-import { Form, Row, Col, Button } from "react-bootstrap";
-import "./QuartoForm.css";
+import { Button, Form, Row, Col } from "react-bootstrap";
 
-const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
+const QuartoForm = ({ onSave, onCancel, quartoAtual }) => {
+  const [numeroOriginal, setNumeroOriginal] = useState(null);
+
   const [quarto, setQuarto] = useState({
-    id: null,          
     numero: "",
     tipo: "",
-    status: "Disponível",
     leitos: 1,
     andar: "",
     observacao: "",
   });
 
-  const [validated, setValidated] = useState(false);
-
   useEffect(() => {
     if (quartoAtual) {
-      setQuarto({
-        id: quartoAtual.id,          
-        numero: quartoAtual.numero,
-        tipo: quartoAtual.tipo,
-        status: quartoAtual.status,
-        leitos: quartoAtual.leitos,
-        andar: quartoAtual.andar,
-        observacao: quartoAtual.observacao || "",
-      });
+      setQuarto(quartoAtual);
+      setNumeroOriginal(quartoAtual.numero);
     }
   }, [quartoAtual]);
 
@@ -33,41 +23,20 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
     const { name, value } = e.target;
     setQuarto((prev) => ({
       ...prev,
-      [name]: name === "leitos" ? Math.max(1, parseInt(value) || 1) : value,
+      [name]: name === "leitos" ? parseInt(value) : value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
-
-    if (form.checkValidity() === false) {
-      e.stopPropagation();
-      setValidated(true);
-      return;
-    }
-
-    onSave(quarto);
-    setValidated(false);
-
-    if (!quartoAtual) {
-      setQuarto({
-        id: null,
-        numero: "",
-        tipo: "",
-        status: "Disponível",
-        leitos: 1,
-        andar: "",
-        observacao: "",
-      });
-    }
+    onSave(quarto, numeroOriginal); // Passa o número original para identificar no update
   };
 
   return (
-    <Form noValidate validated={validated} onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit}>
       <Row className="mb-3">
         <Col md={6}>
-          <Form.Group>
+          <Form.Group controlId="numero">
             <Form.Label>Número do Quarto*</Form.Label>
             <Form.Control
               type="text"
@@ -76,15 +45,14 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
               onChange={handleChange}
               required
             />
-            <Form.Control.Feedback type="invalid">
-              Informe o número do quarto.
-            </Form.Control.Feedback>
           </Form.Group>
         </Col>
+
         <Col md={6}>
-          <Form.Group>
+          <Form.Group controlId="andar">
             <Form.Label>Andar*</Form.Label>
-            <Form.Select
+            <Form.Control
+              as="select"
               name="andar"
               value={quarto.andar}
               onChange={handleChange}
@@ -94,19 +62,17 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
               <option value="1">1º Andar</option>
               <option value="2">2º Andar</option>
               <option value="3">3º Andar</option>
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              Selecione o andar.
-            </Form.Control.Feedback>
+            </Form.Control>
           </Form.Group>
         </Col>
       </Row>
 
       <Row className="mb-3">
         <Col md={6}>
-          <Form.Group>
+          <Form.Group controlId="tipo">
             <Form.Label>Tipo de Quarto*</Form.Label>
-            <Form.Select
+            <Form.Control
+              as="select"
               name="tipo"
               value={quarto.tipo}
               onChange={handleChange}
@@ -116,14 +82,12 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
               <option value="Individual">Individual</option>
               <option value="Coletivo">Coletivo</option>
               <option value="Especial">Especial</option>
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              Selecione o tipo.
-            </Form.Control.Feedback>
+            </Form.Control>
           </Form.Group>
         </Col>
+
         <Col md={6}>
-          <Form.Group>
+          <Form.Group controlId="leitos">
             <Form.Label>Número de Leitos*</Form.Label>
             <Form.Control
               type="number"
@@ -133,48 +97,31 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual = null }) => {
               onChange={handleChange}
               required
             />
-            <Form.Control.Feedback type="invalid">
-              Informe os leitos.
-            </Form.Control.Feedback>
           </Form.Group>
         </Col>
       </Row>
 
       <Row className="mb-3">
-        <Col md={6}>
-          <Form.Group>
-            <Form.Label>Status*</Form.Label>
-            <Form.Select
-              name="status"
-              value={quarto.status}
-              onChange={handleChange}
-              required
-            >
-              <option value="Disponível">Disponível</option>
-              <option value="Ocupado">Ocupado</option>
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group>
+        <Col>
+          <Form.Group controlId="observacao">
             <Form.Label>Descrição/Observações</Form.Label>
             <Form.Control
               as="textarea"
-              rows={2}
               name="observacao"
               value={quarto.observacao}
               onChange={handleChange}
+              rows={2}
             />
           </Form.Group>
         </Col>
       </Row>
 
-      <div className="d-flex justify-content-end gap-2 mt-4">
-        <Button variant="secondary" onClick={onCancel}>
+      <div className="d-flex justify-content-end">
+        <Button variant="secondary" className="me-2" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" variant="primary">
-          {quartoAtual ? "Atualizar Quarto" : "Salvar Quarto"}
+        <Button variant="primary" type="submit">
+          Salvar Quarto
         </Button>
       </div>
     </Form>

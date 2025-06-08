@@ -6,12 +6,18 @@ const ModalDetalhes = ({ show, onHide, quarto }) => {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Observações</Modal.Title>
+        <Modal.Title>Observações do Quarto</Modal.Title>
       </Modal.Header>
-      <Modal.Body className="text-center">
-        <p className="fs-5">
-          {observacao ? observacao : <span className="text-muted">Sem observações.</span>}
-        </p>
+      <Modal.Body>
+        <div className="text-center py-2">
+          {observacao ? (
+            <p className="fs-5 text-dark fw-medium border rounded p-3 bg-light">
+              {observacao}
+            </p>
+          ) : (
+            <p className="fs-5 text-muted">Sem observações registradas para este quarto.</p>
+          )}
+        </div>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>

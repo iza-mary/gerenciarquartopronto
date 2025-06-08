@@ -1,19 +1,19 @@
 class Quarto {
   constructor(data) {
-    this.id = data.id || null;
-    this.numero = data.numero;
-    this.tipo = data.tipo;
-    this.leitos = data.leitos;
-    this.ocupacao = data.ocupacao ?? 0;
+    this.id = data.id !== undefined && data.id !== null ? parseInt(data.id) : null;
+    this.numero = data.numero !== undefined && data.numero !== null ? parseInt(data.numero) : null;
+    this.tipo = data.tipo || null;
+    this.leitos = data.leitos !== undefined && data.leitos !== null ? parseInt(data.leitos) : null;
+    this.ocupacao = data.ocupacao !== undefined && data.ocupacao !== null ? parseInt(data.ocupacao) : 0;
     this.status = data.status || 'Disponível';
-    this.andar = data.andar;
+    this.andar = data.andar !== undefined && data.andar !== null ? parseInt(data.andar) : null;
     this.observacao = data.observacao || null;
   }
 
   validate() {
     const errors = [];
 
-    if (!this.numero || isNaN(this.numero)) {
+    if (this.numero === null || isNaN(this.numero) || this.numero <= 0) {
       errors.push('Número do quarto é obrigatório e deve ser numérico');
     }
 
@@ -21,12 +21,12 @@ class Quarto {
       errors.push('Tipo é obrigatório');
     }
 
-    if (!this.leitos || isNaN(this.leitos)) {
+    if (this.leitos === null || isNaN(this.leitos) || this.leitos <= 0) {
       errors.push('Número de leitos é obrigatório e deve ser numérico');
     }
 
-    if (this.ocupacao === undefined || isNaN(this.ocupacao)) {
-      errors.push('Ocupação deve ser numérica');
+    if (this.ocupacao === null || isNaN(this.ocupacao) || this.ocupacao < 0) {
+      errors.push('Ocupação deve ser numérica e igual ou maior que zero');
     }
 
     const validStatus = ['Disponível', 'Ocupado'];
@@ -34,7 +34,7 @@ class Quarto {
       errors.push('Status inválido');
     }
 
-    if (!this.andar || isNaN(this.andar)) {
+    if (this.andar === null || isNaN(this.andar) || this.andar < 0) {
       errors.push('Andar é obrigatório e deve ser numérico');
     }
 

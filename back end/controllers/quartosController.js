@@ -21,13 +21,19 @@ class QuartosController {
         total: quartos.length
       });
     } catch (error) {
+      console.error('Erro no controller getAll:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   }
 
   async create(req, res) {
     try {
-      const quarto = new Quarto(req.body);
+      const { id, ...dados } = req.body;
+
+      dados.status = 'Disponível';
+      dados.ocupacao = 0;
+
+      const quarto = new Quarto(dados);
       const errors = quarto.validate();
 
       if (errors.length > 0) {
@@ -41,6 +47,7 @@ class QuartosController {
       const created = await quartoRepository.create(quarto);
       res.status(201).json({ success: true, data: created.toJSON() });
     } catch (error) {
+      console.error('Erro no controller create:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   }
@@ -48,21 +55,14 @@ class QuartosController {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const quarto = new Quarto({ ...req.body, id });
-      const errors = quarto.validate();
+      const dados = { ...req.body };
+      delete dados.status;
 
-      if (errors.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Erro de validação',
-          errors
-        });
-      }
-
-      const updated = await quartoRepository.update(id, quarto);
-      res.json({ success: true, data: updated.toJSON() });
+      const quartoAtualizado = await quartoRepository.update(id, dados);
+      res.json({ success: true, data: quartoAtualizado.toJSON() });
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      console.error('Erro no controller update:', error);
+      res.status(400).json({ success: false, message: error.message });
     }
   }
 
@@ -70,9 +70,10 @@ class QuartosController {
     try {
       const { id } = req.params;
       await quartoRepository.delete(id);
-      res.json({ success: true, message: 'Quarto excluído com sucesso' });
+      res.json({ success: true, message: 'Quarto excluído com sucesso!' });
     } catch (error) {
-      res.status(500).json({ success: false, message: error.message });
+      console.error('Erro no controller delete:', error);
+      res.status(400).json({ success: false, message: error.message });
     }
   }
 }

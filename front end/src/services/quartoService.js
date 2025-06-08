@@ -14,8 +14,8 @@ const handleResponse = async (response) => {
 
 const mapQuarto = (quarto) => ({
   ...quarto,
-  observacao: quarto.observacao || '', 
-  dailyValue: null, 
+  observacao: quarto.observacao || '',
+  dailyValue: null,
 });
 
 const getAll = async () => {
@@ -46,13 +46,13 @@ const add = async (quarto) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        numero: quarto.numero,
+        numero: parseInt(quarto.numero),
         tipo: quarto.tipo,
-        leitos: quarto.leitos,
-        ocupacao: quarto.ocupacao ?? 0,
-        status: quarto.status,
-        andar: quarto.andar,
+        leitos: parseInt(quarto.leitos),
+        andar: parseInt(quarto.andar),
         observacao: quarto.observacao || null,
+        ocupacao: quarto.ocupacao ?? 0,
+        status: quarto.status || 'Disponível',
       }),
     });
     const result = await handleResponse(response);
@@ -69,13 +69,13 @@ const update = async (id, quarto) => {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        numero: quarto.numero,
+        numero: parseInt(quarto.numero),
         tipo: quarto.tipo,
-        leitos: quarto.leitos,
-        ocupacao: quarto.ocupacao ?? 0,
-        status: quarto.status,
-        andar: quarto.andar,
+        leitos: parseInt(quarto.leitos),
+        andar: parseInt(quarto.andar),
         observacao: quarto.observacao || null,
+        ocupacao: quarto.ocupacao ?? 0,
+        status: quarto.status || 'Disponível',
       }),
     });
     const result = await handleResponse(response);
@@ -92,7 +92,7 @@ const remove = async (id) => {
       method: 'DELETE',
     });
     const result = await handleResponse(response);
-    return result.message; 
+    return result.message;
   } catch (error) {
     console.error('Erro ao remover quarto: ', error);
     throw error;
