@@ -91,6 +91,19 @@ class QuartoRepository {
       throw new Error(msg);
     }
 
+    // Verifica duplicidade de número em outro quarto diferente do atual
+    const [rows] = await db.execute(
+      'SELECT id FROM quartos WHERE numero = ? AND id != ?',
+      [data.numero, id]
+    );
+    if (rows.length > 0) {
+      const msg = `Já existe um quarto com número ${data.numero}`;
+      console.error('Erro de duplicidade no repository update:', msg);
+      const err = new Error(msg);
+      err.code = 'ER_DUP_ENTRY'; // marca para identificar no controller
+      throw err;
+    }
+
     // Preservar status atual se não vier na requisição
     const status = data.status || existing.status;
 

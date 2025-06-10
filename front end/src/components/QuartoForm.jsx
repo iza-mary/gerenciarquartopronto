@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
 
 const QuartoForm = ({ onSave, onCancel, quartoAtual }) => {
-  const [numeroOriginal, setNumeroOriginal] = useState(null);
-
   const [quarto, setQuarto] = useState({
     numero: "",
     tipo: "",
@@ -15,7 +13,6 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual }) => {
   useEffect(() => {
     if (quartoAtual) {
       setQuarto(quartoAtual);
-      setNumeroOriginal(quartoAtual.numero);
     }
   }, [quartoAtual]);
 
@@ -27,9 +24,9 @@ const QuartoForm = ({ onSave, onCancel, quartoAtual }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(quarto, numeroOriginal); // Passa o número original para identificar no update
+    await onSave(quarto);
   };
 
   return (

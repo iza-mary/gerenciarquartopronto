@@ -1,14 +1,21 @@
 const API_BASE_URL = 'http://localhost:3001/api/quartos';
 
 const handleResponse = async (response) => {
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const message = data?.message || `HTTP error! status: ${response.status}`;
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
   }
 
-  const data = await response.json();
   if (!data.success) {
-    throw new Error(data.message || 'Erro na requisição');
+    const err = new Error(data.message || 'Erro na requisição');
+    err.status = response.status;
+    throw err;
   }
+
   return data;
 };
 

@@ -46,8 +46,21 @@ class QuartosController {
 
       const created = await quartoRepository.create(quarto);
       res.status(201).json({ success: true, data: created.toJSON() });
+
     } catch (error) {
-      console.error('Erro no controller create:', error);
+      console.error('Erro no controller create:', error.message);
+
+      if (
+        error.message.includes('UNIQUE constraint failed') ||   // SQLite
+        error.message.includes('duplicate key') ||              // PostgreSQL
+        error.message.includes('ER_DUP_ENTRY')                   // MySQL
+      ) {
+        return res.status(409).json({
+          success: false,
+          message: 'Já existe um quarto com este número.'
+        });
+      }
+
       res.status(500).json({ success: false, message: error.message });
     }
   }
@@ -62,6 +75,18 @@ class QuartosController {
       res.json({ success: true, data: quartoAtualizado.toJSON() });
     } catch (error) {
       console.error('Erro no controller update:', error);
+
+      if (
+        error.message.includes('UNIQUE constraint failed') ||   // SQLite
+        error.message.includes('duplicate key') ||              // PostgreSQL
+        error.message.includes('ER_DUP_ENTRY')                   // MySQL
+      ) {
+        return res.status(409).json({
+          success: false,
+          message: 'Já existe um quarto com este número.'
+        });
+      }
+
       res.status(400).json({ success: false, message: error.message });
     }
   }

@@ -17,9 +17,7 @@ const GerenciarQuartos = () => {
   const [quartoEditando, setQuartoEditando] = useState(null);
   const [quartoSelecionado, setQuartoSelecionado] = useState(null);
   const [mostrarDetalhes, setMostrarDetalhes] = useState(false);
-
-  // Estado para armazenar erros ao salvar quarto
-  const [erroSalvar, setErroSalvar] = useState(null);
+  const [erroSalvar, setErroSalvar] = useState(null); // estado de erro ao salvar
 
   useEffect(() => {
     const carregar = async () => {
@@ -46,14 +44,15 @@ const GerenciarQuartos = () => {
         const salvo = await quartoService.add(quarto);
         setQuartos((prev) => [...prev, salvo]);
       }
+
       setMostrarForm(false);
       setQuartoEditando(null);
     } catch (error) {
       console.error("Erro ao salvar quarto:", error);
+      // Exibe mensagem vinda do back-end (por exemplo, conflito 409)
       setErroSalvar(
-        "Erro ao salvar quarto. Por favor, verifique os dados e tente novamente."
+        error.message || "Erro ao salvar quarto. Por favor, verifique os dados e tente novamente."
       );
-      // NÃO fecha o modal para usuário poder corrigir o problema
     }
   };
 
