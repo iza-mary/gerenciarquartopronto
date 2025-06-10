@@ -44,7 +44,7 @@ class QuartoRepository {
   }
 
   async create(data) {
-    // Remove id caso venha
+   
     const { id, ...dados } = data;
     const quarto = new Quarto(dados);
     quarto.status = 'Disponível';
@@ -69,7 +69,7 @@ class QuartoRepository {
           quarto.observacao || null
         ]
       );
-      // Define o id gerado no banco no objeto quarto
+      
       quarto.id = result.insertId;
       return quarto;
     } catch (error) {
@@ -91,7 +91,7 @@ class QuartoRepository {
       throw new Error(msg);
     }
 
-    // Verifica duplicidade de número em outro quarto diferente do atual
+  
     const [rows] = await db.execute(
       'SELECT id FROM quartos WHERE numero = ? AND id != ?',
       [data.numero, id]
@@ -100,11 +100,11 @@ class QuartoRepository {
       const msg = `Já existe um quarto com número ${data.numero}`;
       console.error('Erro de duplicidade no repository update:', msg);
       const err = new Error(msg);
-      err.code = 'ER_DUP_ENTRY'; // marca para identificar no controller
+      err.code = 'ER_DUP_ENTRY';
       throw err;
     }
 
-    // Preservar status atual se não vier na requisição
+   
     const status = data.status || existing.status;
 
     const quarto = new Quarto({

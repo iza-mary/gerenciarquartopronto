@@ -17,7 +17,7 @@ const GerenciarQuartos = () => {
   const [quartoEditando, setQuartoEditando] = useState(null);
   const [quartoSelecionado, setQuartoSelecionado] = useState(null);
   const [mostrarDetalhes, setMostrarDetalhes] = useState(false);
-  const [erroSalvar, setErroSalvar] = useState(null); // estado de erro ao salvar
+  const [erroSalvar, setErroSalvar] = useState(null); 
 
   useEffect(() => {
     const carregar = async () => {
@@ -33,7 +33,7 @@ const GerenciarQuartos = () => {
 
   const handleSalvar = async (quarto) => {
     try {
-      setErroSalvar(null); // limpa erro anterior
+      setErroSalvar(null); 
 
       if (quartoEditando) {
         const atualizado = await quartoService.update(quartoEditando.id, quarto);
@@ -49,7 +49,7 @@ const GerenciarQuartos = () => {
       setQuartoEditando(null);
     } catch (error) {
       console.error("Erro ao salvar quarto:", error);
-      // Exibe mensagem vinda do back-end (por exemplo, conflito 409)
+      
       setErroSalvar(
         error.message || "Erro ao salvar quarto. Por favor, verifique os dados e tente novamente."
       );
@@ -59,7 +59,7 @@ const GerenciarQuartos = () => {
   const handleEditar = (quarto) => {
     setQuartoEditando(quarto);
     setMostrarForm(true);
-    setErroSalvar(null); // limpa erro se houver
+    setErroSalvar(null); 
   };
 
   const handleConfirmarExclusao = (id) => {
@@ -126,7 +126,7 @@ const GerenciarQuartos = () => {
           </Row>
         </Container>
 
-        {/* Modal de adicionar/editar */}
+        {}
         <Modal
           show={mostrarForm}
           onHide={() => {
@@ -161,14 +161,14 @@ const GerenciarQuartos = () => {
           </Modal.Body>
         </Modal>
 
-        {/* Modal de confirmação de exclusão */}
+        {}
         <ModalExcluir
           show={mostrarModalExcluir}
           onHide={() => setMostrarModalExcluir(false)}
           onConfirm={handleExcluir}
         />
 
-        {/* Modal de detalhes */}
+        {}
         <ModalDetalhes
           show={mostrarDetalhes}
           onHide={() => setMostrarDetalhes(false)}

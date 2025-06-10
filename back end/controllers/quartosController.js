@@ -51,9 +51,9 @@ class QuartosController {
       console.error('Erro no controller create:', error.message);
 
       if (
-        error.message.includes('UNIQUE constraint failed') ||   // SQLite
-        error.message.includes('duplicate key') ||              // PostgreSQL
-        error.message.includes('ER_DUP_ENTRY')                   // MySQL
+        error.message.includes('UNIQUE constraint failed') ||   
+        error.message.includes('duplicate key') ||              
+        error.message.includes('ER_DUP_ENTRY')                  
       ) {
         return res.status(409).json({
           success: false,
@@ -77,9 +77,9 @@ class QuartosController {
       console.error('Erro no controller update:', error);
 
       if (
-        error.message.includes('UNIQUE constraint failed') ||   // SQLite
-        error.message.includes('duplicate key') ||              // PostgreSQL
-        error.message.includes('ER_DUP_ENTRY')                   // MySQL
+        error.message.includes('UNIQUE constraint failed') ||   
+        error.message.includes('duplicate key') ||              
+        error.message.includes('ER_DUP_ENTRY')                  
       ) {
         return res.status(409).json({
           success: false,
